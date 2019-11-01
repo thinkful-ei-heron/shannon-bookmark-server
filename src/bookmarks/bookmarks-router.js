@@ -46,7 +46,6 @@ bookmarksRouter
       rating: rate,
     };
     bookmarks.push(newBookmark);
-    console.log(bookmarks);
     return res
       .status(201)
       .location(`http://localhost:${PORT}/bookmarks/${id}`)
@@ -56,14 +55,32 @@ bookmarksRouter
 bookmarksRouter
   .route('/:id')
   .get((req, res) => {
+    const { id } = req.params;
+    
+    const bookmark = bookmarks.find(item => item.id === id);
+    if(!bookmark) {
+      logger.info('Cannot find bookmark with that id');
+      return res
+        .status(404)
+        .json({error:'Cannot find bookmark with matching id'});
+    }
     return res
       .status(200)
-      .json({ message: `GET request received. Params: ${req.params.id}` });
+      .json(bookmark);
   })
   .delete((req, res) => {
+    const { id } = req.params;
+    const bookmarkIndex = bookmarks.findIndex(item => item.id === id);
+    if(bookmarkIndex === -1) {
+      logger.info('Cannot find bookmark with that id');
+      return res
+        .status(404)
+        .json({error:'Cannot find bookmark with matching id'});
+    }
+    bookmarks.splice(bookmarkIndex, 1);
     return res
-      .status(200)
-      .json({message: `delete request received. Params: ${req.params.id}`});
+      .status(204)
+      .end();
   });
 
 
