@@ -16,10 +16,10 @@ bookmarksRouter
       .json(bookmarks);
   })
   .post(bodyParser, (req, res) => {
-    const { title, url, description, rating} = req.body;
+    const { title, url, desc, rating} = req.body;
     const rate = parseFloat(rating);
 
-    if(!title || !url || !description || !rating) {
+    if(!title || !url || !desc || !rating) {
       logger.info('Required data is missing.');
       return res
         .status(400)
@@ -42,7 +42,7 @@ bookmarksRouter
       id,
       title,
       url,
-      description,
+      desc,
       rating: rate,
     };
     bookmarks.push(newBookmark);
