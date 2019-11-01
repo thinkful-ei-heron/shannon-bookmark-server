@@ -78,6 +78,7 @@ bookmarksRouter
         .json({error:'Cannot find bookmark with matching id'});
     }
     bookmarks.splice(bookmarkIndex, 1);
+    logger.info(`Bookmark with id of: ${id} deleted`);
     return res
       .status(204)
       .end();
