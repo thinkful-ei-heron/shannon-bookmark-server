@@ -1,14 +1,14 @@
 const bookmarks = [{
   id:'1',
   title:'Google',
-  url: 'http://www.google.com',
+  url: 'https://www.google.com',
   desc: 'google stuff',
   rating: 4
 },
 {
   id:'2',
   title:'Imgur',
-  url: 'http://www.imgur.com',
+  url: 'https://www.imgur.com',
   desc: 'imgur stuff',
   rating: 5
 },
