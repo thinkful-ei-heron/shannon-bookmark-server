@@ -1,5 +1,0 @@
-{"message":"Authorization failed, user supplied the following authToken: No Token Supplied","level":"info"}
-{"message":"Authorization failed, user supplied the following authToken: Bearer hiWorld!","level":"info"}
-{"message":"Authorization failed, user supplied the following authToken: Becarer 36c82fe6-d4b7-4bdd-94d4-96237b97df71","level":"info"}
-{"message":"Authorization failed, user supplied the following authToken: Bearer 36c82fe6-d4b7-4bdd-94d4-96237b97df71c","level":"info"}
-{"message":"Authorization failed, user supplied the following authToken: Bearer 36c82fe6c-d4b7-4bdd-94d4-96237b97df71","level":"info"}
