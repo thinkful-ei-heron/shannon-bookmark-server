@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV, API_TOKEN } = require('./config');
 const bookmarks = require('../store');
+const logger = require('./logger');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(function validateBearerToken(req, res, next){
   const authToken = req.get('Authorization');
   if (!authToken || authToken.split(' ')[0] !== 'Bearer' || authToken.split(' ')[1] !== API_TOKEN) {
+    logger.info(`Authorization failed, user supplied the following authToken: ${authToken ? authToken : 'No Token Supplied'}`);
     return res
       .status(400)
       .json({error: 'Invalid Authorization'});
