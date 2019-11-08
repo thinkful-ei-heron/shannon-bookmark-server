@@ -10,9 +10,23 @@ const BookmarksService = {
       .select('*')
       .where({ id })
       .first();
+  },
+
+  postNewBookmark(db, newBookmarkData) {
+    return db
+      .insert(newBookmarkData)
+      .into('bookmarks')
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
+  deleteBookmark(db, id) {
+    return db('bookmarks')
+      .where({id})
+      .delete();
   }
-
-
 
 };
 

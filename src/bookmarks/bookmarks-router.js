@@ -19,10 +19,11 @@ bookmarksRouter
       });
   })
   .post(bodyParser, (req, res) => {
-    const { title, url, desc, rating } = req.body;
+    const knexInstance = req.app.get('db');
+    const { title, url, description, rating } = req.body;
     const rate = parseFloat(rating);
 
-    if (!title || !url || !desc || !rating) {
+    if (!title || !url || !description || !rating) {
       logger.info('Required data is missing.');
       return res
         .status(400)
@@ -40,24 +41,25 @@ bookmarksRouter
         .status(400)
         .json({ error: 'Rating must be a number between 1 and 5' });
     }
-    const id = uuid();
     const newBookmark = {
-      id,
       title,
       url,
-      desc,
+      description,
       rating: rate,
     };
-    bookmarks.push(newBookmark);
-    return res
-      .status(201)
-      .location(`http://localhost:${PORT}/bookmarks/${id}`)
-      .json(newBookmark);
+    BookmarksService.postNewBookmark(knexInstance, newBookmark)
+      .then(bookmark => {
+        return res
+          .status(201)
+          .location(`/bookmarks/${bookmark.id}`)
+          .json(bookmark);
+      });
+
   });
 
 bookmarksRouter
   .route('/:id')
-  .get((req, res) => {
+  .all((req, res, next) => {
     const knexInstance = req.app.get('db');
     const id = req.params.id;
 
@@ -69,23 +71,25 @@ bookmarksRouter
             .status(404)
             .json({ error: 'Cannot find bookmark with matching id' });
         }
-        return res.status(200).json(bookmark);
-      });
+        res.bookmark = bookmark;
+        next();
+        return null;
+      })
+      .catch(next);
+  })
+  .get((req, res) => {
+    return res.status(200).json(res.bookmark);
   })
   .delete((req, res) => {
+    const knexInstance = req.app.get('db');
     const { id } = req.params;
-    const bookmarkIndex = bookmarks.findIndex(item => item.id === id);
-    if (bookmarkIndex === -1) {
-      logger.info('Cannot find bookmark with that id');
-      return res
-        .status(404)
-        .json({ error: 'Cannot find bookmark with matching id' });
-    }
-    bookmarks.splice(bookmarkIndex, 1);
-    logger.info(`Bookmark with id of: ${id} deleted`);
-    return res
-      .status(204)
-      .end();
+    BookmarksService.deleteBookmark(knexInstance, id)
+      .then(() => {
+        logger.info(`Bookmark with id of: ${id} deleted`);
+        return res
+          .status(204)
+          .end();
+      });
   });
 
 
