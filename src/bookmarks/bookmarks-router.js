@@ -1,13 +1,18 @@
 const express = require('express');
 const bookmarksRouter = express.Router();
-const bookmarks = require('../store');
 const bodyParser = express.json();
 const logger = require('../logger');
-const uuid = require('uuid/v4');
 const { PORT } = require('../config');
 const BookmarksService = require('./bookmarks-service');
+const xss = require('xss');
 
-
+const serializeBookmark = bookmark => ({
+  id: bookmark.id,
+  title: xss(bookmark.title),
+  url: xss(bookmark.url),
+  description: xss(bookmark.description),
+  rating: bookmark.rating
+});
 
 bookmarksRouter
   .route('/')
@@ -15,7 +20,8 @@ bookmarksRouter
     const knexInstance = req.app.get('db');
     BookmarksService.getAllBookmarks(knexInstance)
       .then(bookmarks => {
-        return res.status(200).json(bookmarks);
+        return res.status(200).json(bookmarks.map(serializeBookmark)
+        );
       });
   })
   .post(bodyParser, (req, res) => {
@@ -42,9 +48,9 @@ bookmarksRouter
         .json({ error: 'Rating must be a number between 1 and 5' });
     }
     const newBookmark = {
-      title,
-      url,
-      description,
+      title: xss(title),
+      url: xss(url),
+      description: xss(description),
       rating: rate,
     };
     BookmarksService.postNewBookmark(knexInstance, newBookmark)
@@ -52,7 +58,7 @@ bookmarksRouter
         return res
           .status(201)
           .location(`/bookmarks/${bookmark.id}`)
-          .json(bookmark);
+          .json(serializeBookmark(bookmark));
       });
 
   });
@@ -78,7 +84,7 @@ bookmarksRouter
       .catch(next);
   })
   .get((req, res) => {
-    return res.status(200).json(res.bookmark);
+    return res.status(200).json(serializeBookmark(res.bookmark));
   })
   .delete((req, res) => {
     const knexInstance = req.app.get('db');
