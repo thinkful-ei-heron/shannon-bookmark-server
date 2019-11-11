@@ -5,6 +5,7 @@ const logger = require('../logger');
 const { PORT } = require('../config');
 const BookmarksService = require('./bookmarks-service');
 const xss = require('xss');
+const path = require('path');
 
 const serializeBookmark = bookmark => ({
   id: bookmark.id,
@@ -16,6 +17,9 @@ const serializeBookmark = bookmark => ({
 
 bookmarksRouter
   .route('/')
+  .patch((req, res, next) => {
+    return res.status(404).json({ error: { message: 'must provide a bookmark id to update content' } });
+  })
   .get((req, res) => {
     const knexInstance = req.app.get('db');
     BookmarksService.getAllBookmarks(knexInstance)
@@ -57,7 +61,7 @@ bookmarksRouter
       .then(bookmark => {
         return res
           .status(201)
-          .location(`/bookmarks/${bookmark.id}`)
+          .location(path.posix.join(req.originalUrl, `/${bookmark.id}`))
           .json(serializeBookmark(bookmark));
       });
 
@@ -85,6 +89,27 @@ bookmarksRouter
   })
   .get((req, res) => {
     return res.status(200).json(serializeBookmark(res.bookmark));
+  })
+  .patch(bodyParser, (req, res, next) => {
+    const knexInstance = req.app.get('db');
+    const { id } = req.params;
+    const { title, url, description, rating } = req.body;
+    const bookmarkUpdate = { title, url, description, rating };
+
+    const numberOfValues = Object.values(bookmarkUpdate).filter(Boolean).length;
+    if (numberOfValues === 0) {
+      return res.status(400).json({ error: { message: 'fields to update must include title, rating, url, or description' } });
+    }
+
+
+    BookmarksService.updateBookmark(knexInstance, id, bookmarkUpdate)
+      .then(() => {
+        logger.info(`Bookmark with id of: ${id} updated`);
+        return res
+          .status(204)
+          .end();
+      })
+      .catch(next);
   })
   .delete((req, res) => {
     const knexInstance = req.app.get('db');
